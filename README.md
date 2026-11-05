@@ -20,11 +20,14 @@ Treino e teste com acurácias próximas indicam que a rede não decorou os dados
 
 ## Dados
 
-- 569 amostras, divididas em 455 para treino e 114 para teste
-- 4 entradas: `raio_medio`, `textura_media`, `suavidade_media`, `pontos_concavos_medio`
-- Saída: `B_maligno` (0 = benigno, 1 = maligno)
-- Fonte: <fonte e licença do dataset>
-
+- **Fonte:** Breast Cancer Wisconsin (Diagnostic), de Wolberg, Street e Mangasarian, no [UCI Machine Learning Repository](https://doi.org/10.24432/C5DW2B) (doi 10.24432/C5DW2B).
+- **O que é:** medidas extraídas de imagens de células de 569 tumores de mama. Usei a cópia que acompanha o scikit-learn.
+- **O que eu fiz com ele:**
+  - Selecionei 4 das 30 características: `raio_medio`, `textura_media`, `suavidade_media`, `pontos_concavos_medio` (valores originais, só com nomes em português)
+  - Recodifiquei o rótulo para `B_maligno` (0 = benigno, 1 = maligno)
+  - Dividi em 455 amostras de treino e 114 de teste (coluna `conjunto`)
+- **Licença:** confira na página do UCI e cite aqui.
+- **Uso:** exercício de estudo, não de diagnóstico.
 ## Como funciona
 
 **Pré-processamento.** Cada característica é padronizada (média 0, desvio 1) usando apenas a média e o desvio do treino. O teste recebe os mesmos valores, para não vazar informação dos dados que a rede não pode ver.
