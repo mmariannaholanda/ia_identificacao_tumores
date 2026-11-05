@@ -21,13 +21,13 @@ Treino e teste com acurácias próximas indicam que a rede não decorou os dados
 ## Dados
 
 - **Fonte:** Breast Cancer Wisconsin (Diagnostic), de Wolberg, Street e Mangasarian, no [UCI Machine Learning Repository](https://doi.org/10.24432/C5DW2B) (doi 10.24432/C5DW2B).
-- **O que é:** medidas extraídas de imagens de células de 569 tumores de mama. Usei a cópia que acompanha o scikit-learn.
-- **O que eu fiz com ele:**
-  - Selecionei 4 das 30 características: `raio_medio`, `textura_media`, `suavidade_media`, `pontos_concavos_medio` (valores originais, só com nomes em português)
-  - Recodifiquei o rótulo para `B_maligno` (0 = benigno, 1 = maligno)
-  - Dividi em 455 amostras de treino e 114 de teste (coluna `conjunto`)
-- **Licença:** confira na página do UCI e cite aqui.
+- **O que é:** medidas extraídas de imagens de células de 569 tumores de mama. Usei a cópia que acompanha o scikit-learn, sem alterar os valores.
+- **O que usei dele:**
+  - 4 características (de 30): `raio_medio`, `textura_media`, `suavidade_media`, `pontos_concavos_medio`
+  - Rótulo `B_maligno` (0 = benigno, 1 = maligno)
+  - Divisão em 455 amostras de treino e 114 de teste (coluna `conjunto`)
 - **Uso:** exercício de estudo, não de diagnóstico.
+
 ## Como funciona
 
 **Pré-processamento.** Cada característica é padronizada (média 0, desvio 1) usando apenas a média e o desvio do treino. O teste recebe os mesmos valores, para não vazar informação dos dados que a rede não pode ver.
@@ -41,6 +41,7 @@ Treino e teste com acurácias próximas indicam que a rede não decorou os dados
 ```
 
 **Treino.**
+
 - Inicialização He nos pesos da camada escondida
 - Perda: entropia cruzada binária, com `clip` para evitar `log(0)`
 - Gradientes calculados à mão, da saída para a entrada (backpropagation)
@@ -65,4 +66,19 @@ Treino e teste com acurácias próximas indicam que a rede não decorou os dados
 - [ ] Fixar a semente aleatória
 - [ ] Matriz de confusão e recall dos casos malignos
 - [ ] Comparar com um modelo de referência da scikit-learn
-- [ ]
+- [ ] Levar a ideia para Edge AI: rodar um modelo pequeno em microcontrolador (ESP32)
+
+## Como rodar
+
+```bash
+pip install numpy pandas matplotlib scikit-learn jupyter
+jupyter notebook treino_redeneural_ia.ipynb
+```
+
+Deixe o `tumores.csv` na mesma pasta do notebook.
+
+## Autora
+
+**Marianna Figueiredo Holanda**, estudante de Engenharia da Computação na UNIFOR e estagiária de IoT no Vortex Lab. Foco em firmware, IoT, IA  e desenvolvimento de software.
+
+[GitHub](https://github.com/mmariannaholanda)
