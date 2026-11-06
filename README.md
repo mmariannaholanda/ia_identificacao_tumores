@@ -106,7 +106,6 @@ Para prever, o tumor novo precisa ser padronizado com `media` e `desvio` do arqu
 - [ ] Separar um conjunto de validação para escolher a arquitetura
 - [ ] Testar o efeito da taxa de aprendizado (muito alta e muito baixa)
 - [ ] Comparar com um modelo de referência da scikit-learn
-- [ ] Levar a ideia para Edge AI: rodar um modelo pequeno em microcontrolador (ESP32)
 
 ## Como rodar
 
