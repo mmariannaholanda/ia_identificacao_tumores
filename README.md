@@ -1,6 +1,6 @@
 # Rede neural do zero para classificar tumores
 
-Classificador binário (benigno × maligno) feito **só com NumPy**: propagação, função de perda, backpropagation e gradiente descendente escritos à mão, sem TensorFlow nem PyTorch. Acerta **95,6% no teste**, contra 63,2% de um baseline ingênuo.
+Classificador binário (benigno × maligno) feito **só com NumPy**: propagação, função de perda, backpropagation e gradiente descendente escritos à mão, sem TensorFlow nem PyTorch. Acerta **95,6% no teste**, contra 63,2% de um baseline ingênuo, e detecta **41 dos 42 tumores malignos** do conjunto de teste.
 
 Projeto de estudo da minha trilha de IA. A ideia era entender o que acontece dentro de uma rede antes de usar uma biblioteca que esconde tudo isso.
 
@@ -9,43 +9,54 @@ Projeto de estudo da minha trilha de IA. A ideia era entender o que acontece den
 | Métrica | Valor |
 |---|---|
 | Acurácia no teste | 95,6% |
-| Acurácia no treino | 95,2% |
+| Acurácia no treino | 95,6% |
 | Baseline (sempre prever a classe mais comum) | 63,2% |
 | Ganho sobre o baseline | +32,5 pontos |
-| Perda final (entropia cruzada) | 0,118 |
+| Recall dos malignos | 97,6% (41 de 42) |
+| Perda final (entropia cruzada) | 0,102 |
 
-Treino e teste com acurácias próximas indicam que a rede não decorou os dados (sem overfitting relevante).
+Treino e teste com a mesma acurácia indicam que a rede não decorou os dados (sem overfitting relevante).
 
 ![Curva de perda](perda_treino.png)
+
+### Matriz de confusão (114 tumores de teste)
+
+![Matriz de confusão](matriz_confusao.png)
+
+No teste, a rede detectou 41 dos 42 tumores malignos e deixou 1 passar como benigno. Também marcou 4 tumores benignos como malignos, um erro menos grave. O baseline, que sempre prevê benigno, tem recall de 0%.
 
 ## Dados
 
 - **Fonte:** Breast Cancer Wisconsin (Diagnostic), de Wolberg, Street e Mangasarian, no [UCI Machine Learning Repository](https://doi.org/10.24432/C5DW2B) (doi 10.24432/C5DW2B).
-- **O que é:** medidas extraídas de imagens de células de 569 tumores de mama. Usei a cópia que acompanha o scikit-learn, sem alterar os valores.
+- **O que é:** medidas extraídas de imagens de células de 569 tumores de mama. Usei a cópia que acompanha o scikit-learn.
 - **O que usei dele:**
-  - 4 características (de 30): `raio_medio`, `textura_media`, `suavidade_media`, `pontos_concavos_medio`
+  - 4 características (de 30), sem alterar os valores: `raio_medio`, `textura_media`, `suavidade_media`, `pontos_concavos_medio`
   - Rótulo `B_maligno` (0 = benigno, 1 = maligno)
   - Divisão em 455 amostras de treino e 114 de teste (coluna `conjunto`)
 - **Uso:** exercício de estudo, não de diagnóstico.
 
 ## Como funciona
 
-**Pré-processamento.** Cada característica é padronizada (média 0, desvio 1) usando apenas a média e o desvio do treino. O teste recebe os mesmos valores, para não vazar informação dos dados que a rede não pode ver.
+**Pré-processamento.** Cada característica é padronizada (média 0, desvio 1) usando apenas a média e o desvio do treino. O teste e os dados novos recebem os mesmos valores, para não vazar informação.
 
 **Baseline.** Antes de treinar, medi quanto um "modelo" que sempre prevê a classe mais frequente acerta. Uma rede só tem valor se superar esse número.
 
 **Arquitetura.**
 
 ```
-4 entradas → 8 neurônios (ReLU) → 1 neurônio (sigmoide) → probabilidade de ser maligno
+4 entradas → 32 neurônios (ReLU) → 1 neurônio (sigmoide) → probabilidade de ser maligno
 ```
 
 **Treino.**
 
-- Inicialização He nos pesos da camada escondida
+- Inicialização He nos pesos da camada escondida e semente fixa (`np.random.seed(42)`) para resultados reproduzíveis
 - Perda: entropia cruzada binária, com `clip` para evitar `log(0)`
 - Gradientes calculados à mão, da saída para a entrada (backpropagation)
-- Gradiente descendente, taxa de aprendizado 0,1, 5000 passos
+- Gradiente descendente, taxa de aprendizado 0,1, 10000 passos
+
+**Avaliação.** Acurácia, matriz de confusão e recall dos malignos, porque deixar um tumor maligno passar é o erro mais grave.
+
+**Previsão com dados novos.** O notebook tem campos para digitar os 4 valores de um tumor e um botão que devolve a probabilidade de ser maligno e a previsão da rede. Os campos só funcionam ao rodar o notebook (Colab ou Jupyter), não na visualização do GitHub.
 
 ## O que eu aprendi
 
@@ -53,32 +64,36 @@ Treino e teste com acurácias próximas indicam que a rede não decorou os dados
 - Por que o erro da saída fica simples (`probabilidade - resposta`) quando se combina sigmoide com entropia cruzada
 - Por que o pré-processamento deve usar só estatísticas do treino
 - Por que comparar com um baseline antes de comemorar a acurácia
+- Por que acurácia sozinha engana e o recall mostra o erro que mais importa
+- Que o formato da saída importa: uma rede binária precisa de 1 neurônio de saída. Com 5, as contagens da matriz de confusão saíram multiplicadas por 5 sem nenhum erro aparecer
 
 ## Limitações
 
 - Dataset pequeno e dividido uma única vez, então o resultado tem variação
-- Sem semente fixa nesta versão, então os números mudam um pouco a cada execução
-- Acurácia sozinha não mostra quantos tumores malignos passaram como benignos (falsos negativos)
+- Com 114 amostras de teste, 1 ou 2 erros nos malignos já mexem bastante no recall
+- A perda ainda caía devagar ao fim dos 10000 passos, então a rede poderia treinar mais
 - Projeto educacional, **não serve para diagnóstico**
 
 ## Próximos passos
 
-- [ ] Fixar a semente aleatória
-- [ ] Matriz de confusão e recall dos casos malignos
+- [x] Fixar a semente aleatória
+- [x] Matriz de confusão e recall dos casos malignos
+- [x] Prever com dados digitados
 - [ ] Comparar com um modelo de referência da scikit-learn
+- [ ] Salvar os pesos e a padronização para prever sem retreinar
 - [ ] Levar a ideia para Edge AI: rodar um modelo pequeno em microcontrolador (ESP32)
 
 ## Como rodar
 
 ```bash
-pip install numpy pandas matplotlib scikit-learn jupyter
+pip install numpy pandas matplotlib scikit-learn jupyter ipywidgets
 jupyter notebook treino_redeneural_ia.ipynb
 ```
 
-Deixe o `tumores.csv` na mesma pasta do notebook.
+Deixe o `tumores.csv` na mesma pasta do notebook e rode as células de cima para baixo.
 
 ## Autora
 
-**Marianna Figueiredo Holanda**, estudante de Engenharia da Computação na UNIFOR e estagiária de IoT no Vortex Lab. Foco em firmware, IoT, IA  e desenvolvimento de software.
+**Mari**, estudante de Engenharia da Computação na UNIFOR e estagiária de IoT no Vortex Lab. Foco em firmware, IoT e Edge AI.
 
 [GitHub](https://github.com/mmariannaholanda)
