@@ -15,8 +15,6 @@ Projeto de estudo da minha trilha de IA. A ideia era entender o que acontece den
 | Recall dos malignos | 97,6% (41 de 42) |
 | Perda final (entropia cruzada) | 0,102 |
 
-Treino e teste com a mesma acurácia indicam que a rede não decorou os dados (sem overfitting relevante).
-
 ![Curva de perda](perda_treino.png)
 
 ### Matriz de confusão (114 tumores de teste)
@@ -58,6 +56,28 @@ No teste, a rede detectou 41 dos 42 tumores malignos e deixou 1 passar como beni
 
 **Previsão com dados novos.** O notebook tem campos para digitar os 4 valores de um tumor e um botão que devolve a probabilidade de ser maligno e a previsão da rede. Os campos só funcionam ao rodar o notebook (Colab ou Jupyter), não na visualização do GitHub.
 
+## Salvar e carregar o modelo
+
+Depois do treino, os parâmetros e a padronização são salvos em `modelo_tumores.npz`, para prever sem treinar de novo:
+
+| Array | Formato | O que é |
+|---|---|---|
+| `pesos_escondida` | (4, 32) | pesos das 4 entradas para os 32 neurônios |
+| `vies_escondida` | (1, 32) | 1 viés por neurônio escondido |
+| `pesos_saida` | (32, 1) | pesos dos 32 neurônios para a saída |
+| `vies_saida` | (1, 1) | viés da saída |
+| `media`, `desvio` | (4,) | padronização, calculada só com o treino |
+| `colunas` | (4,) | nomes das colunas, na ordem em que a rede espera |
+
+```python
+import numpy as np
+
+modelo = np.load("modelo_tumores.npz")
+print(modelo.files)
+```
+
+Para prever, o tumor novo precisa ser padronizado com `media` e `desvio` do arquivo e passar pelas mesmas contas da propagação (soma, ReLU, soma, sigmoide), com as 4 medidas na ordem de `colunas`.
+
 ## O que eu aprendi
 
 - Como o gradiente atravessa as camadas e por que a derivada da ReLU vira uma máscara (`soma > 0`)
@@ -65,13 +85,16 @@ No teste, a rede detectou 41 dos 42 tumores malignos e deixou 1 passar como beni
 - Por que o pré-processamento deve usar só estatísticas do treino
 - Por que comparar com um baseline antes de comemorar a acurácia
 - Por que acurácia sozinha engana e o recall mostra o erro que mais importa
-- Que o formato da saída importa: uma rede binária precisa de 1 neurônio de saída. Com 5, as contagens da matriz de confusão saíram multiplicadas por 5 sem nenhum erro aparecer
+- Que o formato da saída importa: uma rede binária precisa de 1 neurônio de saída. Com 5, as contagens da matriz de confusão saíram multiplicadas por 5 sem nenhum erro aparecer, e só a soma da matriz (570 em vez de 114) mostrou o problema
+- Como pesos e vieses são guardados (matrizes e vetores) e como salvá-los com `np.savez`
 
 ## Limitações
 
 - Dataset pequeno e dividido uma única vez, então o resultado tem variação
 - Com 114 amostras de teste, 1 ou 2 erros nos malignos já mexem bastante no recall
-- A perda ainda caía devagar ao fim dos 10000 passos, então a rede poderia treinar mais
+- Só há treino e teste, sem conjunto de validação separado. Por isso o resultado no teste é uma estimativa, e escolhas como o número de neurônios não foram validadas à parte
+- A perda ainda caía devagar ao fim dos 10000 passos
+- O modelo salvo só vale para essas 4 medidas, na mesma ordem e na mesma escala do treino
 - Projeto educacional, **não serve para diagnóstico**
 
 ## Próximos passos
@@ -79,8 +102,10 @@ No teste, a rede detectou 41 dos 42 tumores malignos e deixou 1 passar como beni
 - [x] Fixar a semente aleatória
 - [x] Matriz de confusão e recall dos casos malignos
 - [x] Prever com dados digitados
+- [x] Salvar os pesos e a padronização (`.npz`)
+- [ ] Separar um conjunto de validação para escolher a arquitetura
+- [ ] Testar o efeito da taxa de aprendizado (muito alta e muito baixa)
 - [ ] Comparar com um modelo de referência da scikit-learn
-- [ ] Salvar os pesos e a padronização para prever sem retreinar
 - [ ] Levar a ideia para Edge AI: rodar um modelo pequeno em microcontrolador (ESP32)
 
 ## Como rodar
@@ -94,6 +119,6 @@ Deixe o `tumores.csv` na mesma pasta do notebook e rode as células de cima para
 
 ## Autora
 
-**Mari**, estudante de Engenharia da Computação na UNIFOR e estagiária de IoT no Vortex Lab. Foco em firmware, IoT e Edge AI.
+**Marianna Figueiredo Holanda**, estudante de Engenharia da Computação na UNIFOR e estagiária de IoT no Vortex Lab. Foco em firmware, IoT, Edge AI e desenvolvimento de software.
 
 [GitHub](https://github.com/mmariannaholanda)
